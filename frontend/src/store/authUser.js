@@ -52,4 +52,13 @@ export const useAuthStore = create((set) => ({
 			// toast.error(error.response.data.message || "An error occurred");
 		}
 	},
+	profile: async (credentials) => {
+		try {
+			const response = await axios.post("/api/v1/auth/profile", credentials);
+			set({user: response.data.user})
+			toast.success("Profile Edited Successfully");
+		} catch (error) {
+			toast.error(error.response.data.message || "Failed to edit");
+		}
+	},
 }));
