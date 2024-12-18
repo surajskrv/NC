@@ -114,3 +114,46 @@ export async function authCheck(req, res) {
 		res.status(500).json({ success: false, message: "Internal server error" });
 	}
 }
+
+export async function profile(req, res) {
+	try {
+		// Find the user by ID from the request
+		const user = await User.findById(req.user._id);
+
+		if (!user) {
+			return res.status(404).json({
+				success: false,
+				message: "User not found",
+			});
+		}
+
+		// Update the user's details with the provided data
+		user.username = req.body.username || user.username;
+		user.email = req.body.email || user.email;
+		user.image = req.body.image || user.image;
+
+		// Update password only if provided
+		if (req.body.password) {
+			const salt = await bcryptjs.genSalt(10);
+			user.password =  await bcryptjs.hash(password, salt);// Assuming the User model handles hashing
+		}
+
+		// Save the updated user information
+		await user.save();
+
+		// Send the response with the updated user details (excluding the password)
+		res.status(200).json({
+			success: true,
+			user: {
+				...user._doc,
+				password: "",
+			},
+		});
+	} catch (error) {
+		console.error("Error in Profile controller:", error.message);
+		res.status(500).json({
+			success: false,
+			message: "Internal server error",
+		});
+	}
+}
